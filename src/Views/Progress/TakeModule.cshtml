@@ -1,0 +1,114 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using TalentSchool.Domain.Enums
+@using TalentSchool.Helpers
+@model TalentSchool.ViewModels.TakeModuleViewModel
+
+@{
+    ViewData["Title"] = Model.ModuleTitle;
+}
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">@Model.ModuleTitle</h1>
+            <p class="text-sm text-gray-500">Contenido @Model.CurrentContentIndex de @Model.TotalContents</p>
+        </div>
+        <a href="@Url.Action("Index","Module")" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Volver a mis módulos
+        </a>
+    </div>
+
+    <!-- Barra de progreso -->
+
+    <!-- Estado del módulo -->
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center">
+            @switch (Model.Status)
+            {
+                case ProgressStatus.New:
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        No Iniciado
+                    </span>
+                    break;
+                case ProgressStatus.InProgress:
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        En Progreso
+                    </span>
+                    break;
+                case ProgressStatus.Completed:
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Completado
+                    </span>
+                    break;
+            }
+            @if (Model.CompletedAt.HasValue)
+            {
+                <span class="ml-2 text-sm text-gray-500">Completado el @Model.CompletedAt.Value.ToString("dd/MM/yyyy")</span>
+            }
+        </div>
+    </div>
+
+    <!-- Contenido del módulo -->
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+        <div class="prose max-w-none markdown-content">
+            @Html.RenderMarkdown(Model.CurrentContent.Content)
+        </div>
+    </div>
+
+    <!-- Navegación entre contenidos -->
+    <div class="flex justify-between items-center">
+        <div>
+            @if (Model.HasPrevious)
+            {
+                <form asp-action="Navigate" method="post" class="inline">
+                    <input type="hidden" name="userId" value="@Model.UserId" />
+                    <input type="hidden" name="moduleId" value="@Model.ModuleId" />
+                    <input type="hidden" name="currentIndex" value="@Model.CurrentContentIndex" />
+                    <input type="hidden" name="direction" value="prev" />
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Anterior
+                    </button>
+                </form>
+            }
+        </div>
+        <div>
+            @if (Model.Status != ProgressStatus.Completed)
+            {
+                @if (Model.IsLastContent)
+                {
+                    <form asp-action="Navigate"  method="post" class="inline">
+                        <input type="hidden" name="ModuleId" value="@Model.ModuleId" />
+                        <input type="hidden" name="CurrentIndex" value="@Model.CurrentContentIndex" />
+                        <input type="hidden" name="Direction" value="complete" />
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            Completar Módulo
+                        </button>
+                    </form>
+                }
+                else if (Model.HasNext)
+                {
+                    <form asp-action="Navigate" method="post" class="inline">
+                        <input type="hidden" name="ModuleId" value="@Model.ModuleId" />
+                        <input type="hidden" name="CurrentIndex" value="@Model.CurrentContentIndex" />
+                        <input type="hidden" name="Direction" value="next" />
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium   bg-primary bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Siguiente
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </form>
+                }
+            }
+        </div>
+    </div>
+</div>

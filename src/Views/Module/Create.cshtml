@@ -1,0 +1,120 @@
+@model Module
+
+@{
+    ViewData["Title"] = "Nuevo Módulo";
+}
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Nuevo Módulo</h1>
+        <a href="@Url.Action("Index")" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Volver al listado
+        </a>
+    </div>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="col-span-1">
+                <label asp-for="Title" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <input asp-for="Title" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <span asp-validation-for="Title" class="text-sm text-red-600"></span>
+            </div>
+            <div class="col-span-1">
+                <label asp-for="Category" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <input asp-for="Category" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <span asp-validation-for="Category" class="text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Contenidos</h2>
+
+            <div id="contents-container" class="space-y-6">
+                <!-- Los contenidos se agregarán aquí dinámicamente -->
+            </div>
+
+            <button type="button" id="add-content" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Agregar Contenido
+            </button>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <a href="@Url.Action("Index")" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">Cancelar</a>
+            <button type="submit" class="px-4 py-2 bg-primary bg-gray-200 rounded-md hover:bg-primary-dark transition-colors">Crear Módulo</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentsContainer = document.getElementById('contents-container');
+            const addContentButton = document.getElementById('add-content');
+            let contentIndex = 0;
+
+            // Función para agregar un nuevo contenido
+            function addContent() {
+                contentIndex++;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'bg-gray-50 border border-gray-200 rounded-lg p-5 content-item relative';
+                contentDiv.dataset.index = contentIndex;
+
+                contentDiv.innerHTML = `
+                    <button type="button" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 remove-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Índice</label>
+                            <input type="number" name="Contents[${contentIndex-1}].Index" value="${contentIndex}" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required />
+                        </div>
+                        <div class="col-span-1 md:col-span-5">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
+                            <textarea name="Contents[${contentIndex-1}].Content" rows="4" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required></textarea>
+                        </div>
+                    </div>
+                `;
+
+                contentsContainer.appendChild(contentDiv);
+
+                // Agregar evento para eliminar contenido
+                const removeButton = contentDiv.querySelector('.remove-content');
+                removeButton.addEventListener('click', function() {
+                    contentDiv.remove();
+                    reindexContents();
+                });
+            }
+
+            // Función para reindexar los contenidos después de eliminar
+            function reindexContents() {
+                const contentItems = document.querySelectorAll('.content-item');
+                contentItems.forEach((item, index) => {
+                    const indexInput = item.querySelector('input[type="number"]');
+                    const contentTextarea = item.querySelector('textarea');
+
+                    indexInput.name = `Contents[${index}].Index`;
+                    contentTextarea.name = `Contents[${index}].Content`;
+                });
+            }
+
+            // Evento para agregar contenido
+            addContentButton.addEventListener('click', addContent);
+
+            // Agregar un contenido inicial
+            addContent();
+        });
+    </script>
+}
