@@ -7,7 +7,7 @@ using TalentSchool.Models;
 
 namespace TalentSchool.Controllers;
 
-[Authorize(Roles = "Administrador")]
+[Authorize]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
